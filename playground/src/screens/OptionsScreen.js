@@ -13,7 +13,7 @@ const {
   HIDE_TOPBAR_DEFAULT_OPTIONS,
   SHOW_YELLOW_BOX_BTN,
   SET_REACT_TITLE_VIEW,
-  GOTO_BUTTONS_SCREEN
+  GOTO_BUTTONS_SCREEN,
 } = require('../testIDs');
 
 class Options extends Component {
@@ -65,7 +65,14 @@ class Options extends Component {
     }
   });
 
-  push = () => Navigation.push(this, Screens.Pushed);
+  push = () => Navigation.push(this, {
+    component: {
+      name: Screens.Pushed,
+      passProps: {
+        previousScreenIds: [this.props.componentId]
+      }
+    }
+  });
 
   hideTopBarInDefaultOptions = () => {
     Navigation.setDefaultOptions({

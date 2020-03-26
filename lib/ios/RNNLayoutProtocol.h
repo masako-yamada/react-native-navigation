@@ -17,7 +17,7 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
 					  eventEmitter:(RNNEventEmitter *)eventEmitter
 			  childViewControllers:(NSArray *)childViewControllers;
 
-- (void)renderTreeAndWait:(BOOL)wait perform:(RNNReactViewReadyCompletionBlock)readyBlock;
+- (void)render;
 
 - (UIViewController<RNNLayoutProtocol> *)getCurrentChild;
 
@@ -25,7 +25,11 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
 
 - (CGFloat)getBottomTabsHeight;
 
+- (UIViewController *)topMostViewController;
+
 - (void)mergeOptions:(RNNNavigationOptions *)options;
+
+- (void)mergeChildOptions:(RNNNavigationOptions *)options child:(UIViewController *)child;
 
 - (RNNNavigationOptions *)resolveOptions;
 
@@ -34,5 +38,7 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
 - (void)overrideOptions:(RNNNavigationOptions *)options;
 
 - (void)onChildWillAppear;
+
+- (void)readyForPresentation;
 
 @end

@@ -17,16 +17,16 @@
 	return self;
 }
 
-- (void)renderTreeAndWait:(BOOL)wait perform:(RNNReactViewReadyCompletionBlock)readyBlock {
-	[self.getCurrentChild renderTreeAndWait:wait perform:readyBlock];
+- (void)render {
+    [self addChildViewController:self.child];
+    [self.child.view setFrame:self.view.bounds];
+    [self.view addSubview:self.child.view];
+    [self.view bringSubviewToFront:self.child.view];
+    [self.child render];
 }
 
 - (void)setChild:(UIViewController<RNNLayoutProtocol> *)child {
 	_child = child;
-	[self addChildViewController:self.child];
-	[self.child.view setFrame:self.view.bounds];
-	[self.view addSubview:self.child.view];
-	[self.view bringSubviewToFront:self.child.view];
 }
 
 - (void)setWidth:(CGFloat)width {

@@ -4,7 +4,7 @@
 #import "UIViewController+RNNOptions.h"
 #import "RNNComponentViewController.h"
 
-@interface RNNBottomTabPresenterTest : XCTestCase
+@interface RNNBasePresenterTest : XCTestCase
 
 @property(nonatomic, strong) RNNBasePresenter *uut;
 @property(nonatomic, strong) RNNNavigationOptions *options;
@@ -13,14 +13,14 @@
 
 @end
 
-@implementation RNNBottomTabPresenterTest
+@implementation RNNBasePresenterTest
 
 - (void)setUp {
     [super setUp];
-    self.uut = [[RNNBasePresenter alloc] init];
+    self.uut = [[RNNBasePresenter alloc] initWithDefaultOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
     self.boundViewController = [RNNComponentViewController new];
     self.mockBoundViewController = [OCMockObject partialMockForObject:self.boundViewController];
-    [self.uut boundViewController:self.mockBoundViewController];
+	[self.uut bindViewController:self.mockBoundViewController];
     self.options = [[RNNNavigationOptions alloc] initEmptyOptions];
 }
 
@@ -36,16 +36,8 @@
     [self.mockBoundViewController verify];
 }
 
-- (void)testApplyOptions_shouldSetTabBarItemBadgeWithValue {
-    OCMStub([self.mockBoundViewController parentViewController]).andReturn([UITabBarController new]);
-    self.options.bottomTab.badge = [[Text alloc] initWithValue:@"badge"];
-    [[self.mockBoundViewController expect] setTabBarItemBadge:self.options.bottomTab.badge.get];
-    [self.uut applyOptions:self.options];
-    [self.mockBoundViewController verify];
-}
-
 - (void)testApplyOptions_setTabBarItemBadgeShouldNotCalledOnUITabBarController {
-    [self.uut boundViewController:self.mockBoundViewController];
+    [self.uut bindViewController:self.mockBoundViewController];
     self.options.bottomTab.badge = [[Text alloc] initWithValue:@"badge"];
     [[self.mockBoundViewController reject] setTabBarItemBadge:[[RNNBottomTabOptions alloc] initWithDict:@{@"badge": @"badge"}]];
     [self.uut applyOptions:self.options];
@@ -53,7 +45,7 @@
 }
 
 - (void)testApplyOptions_setTabBarItemBadgeShouldWhenNoValue {
-    [self.uut boundViewController:self.mockBoundViewController];
+    [self.uut bindViewController:self.mockBoundViewController];
     self.options.bottomTab.badge = nil;
     [[self.mockBoundViewController reject] setTabBarItemBadge:[OCMArg any]];
     [self.uut applyOptions:self.options];
@@ -67,11 +59,11 @@
     XCTAssertEqual([_uut getStatusBarStyle:lightOptions], UIStatusBarStyleLightContent);
 }
 
-- (void)testGetPreferredStatusBarStyle_returnDefaultIfDark {
+- (void)testGetPreferredStatusBarStyle_returnDark {
     RNNNavigationOptions * darkOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
     darkOptions.statusBar.style = [[Text alloc] initWithValue:@"dark"];
 
-    XCTAssertEqual([_uut getStatusBarStyle:darkOptions], UIStatusBarStyleDefault);
+    XCTAssertEqual([_uut getStatusBarStyle:darkOptions], UIStatusBarStyleDarkContent);
 }
 
 - (void)testGetPreferredStatusBarStyle_returnDefaultIfNil {
@@ -95,7 +87,5 @@
     [self.uut applyOptionsOnInit:self.options];
 	XCTAssertTrue(_boundViewController.modalInPresentation);
 }
-
-
 
 @end

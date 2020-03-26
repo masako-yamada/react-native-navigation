@@ -1,12 +1,14 @@
 #import <XCTest/XCTest.h>
-#import "RNNBottomTabsController.h"
-#import "RNNComponentViewController.h"
+#import <ReactNativeNavigation/RNNBottomTabsController.h>
+#import <ReactNativeNavigation/RNNComponentViewController.h>
 #import "RNNStackController.h"
 #import <OCMock/OCMock.h>
-#import "RCTConvert+Modal.h"
+#import <ReactNativeNavigation/BottomTabPresenterCreator.h>
+#import "RNNBottomTabsController+Helpers.h"
 
 @interface RNNTabBarControllerTest : XCTestCase
 
+@property(nonatomic, strong) RNNBottomTabsController * originalUut;
 @property(nonatomic, strong) RNNBottomTabsController * uut;
 @property(nonatomic, strong) id mockChildViewController;
 @property(nonatomic, strong) id mockEventEmitter;
@@ -21,11 +23,12 @@
 
     id tabBarClassMock = OCMClassMock([RNNBottomTabsController class]);
     OCMStub([tabBarClassMock parentViewController]).andReturn([OCMockObject partialMockForObject:[RNNBottomTabsController new]]);
-
+	NSArray* children = @[[[UIViewController alloc] init]];
     self.mockTabBarPresenter = [OCMockObject partialMockForObject:[[RNNBottomTabsPresenter alloc] init]];
     self.mockChildViewController = [OCMockObject partialMockForObject:[RNNComponentViewController new]];
     self.mockEventEmitter = [OCMockObject partialMockForObject:[RNNEventEmitter new]];
-    self.uut = [OCMockObject partialMockForObject:[[RNNBottomTabsController alloc] initWithLayoutInfo:nil creator:nil options:[[RNNNavigationOptions alloc] initWithDict:@{}] defaultOptions:nil presenter:self.mockTabBarPresenter eventEmitter:self.mockEventEmitter childViewControllers:@[[[UIViewController alloc] init]]]];
+	self.originalUut = [[RNNBottomTabsController alloc] initWithLayoutInfo:nil creator:nil options:[[RNNNavigationOptions alloc] initWithDict:@{}] defaultOptions:nil presenter:self.mockTabBarPresenter bottomTabPresenter:[BottomTabPresenterCreator createWithDefaultOptions:nil] dotIndicatorPresenter:[[RNNDotIndicatorPresenter alloc] initWithDefaultOptions:nil] eventEmitter:self.mockEventEmitter childViewControllers:children bottomTabsAttacher:nil];
+    self.uut = [OCMockObject partialMockForObject:self.originalUut];
     OCMStub([self.uut selectedViewController]).andReturn(self.mockChildViewController);
 }
 
@@ -104,11 +107,11 @@
 }
 
 - (void)testMergeOptions_shouldInvokeParentMergeOptions {
-    id parentMock = [OCMockObject partialMockForObject:[RNNComponentViewController new]];
+    id parentMock = [OCMockObject niceMockForClass:[RNNComponentViewController class]];
     RNNNavigationOptions *options = [[RNNNavigationOptions alloc] initWithDict:@{}];
 
     OCMStub([self.uut parentViewController]).andReturn(parentMock);
-    [((RNNComponentViewController *) [parentMock expect]) mergeChildOptions:options];
+    [((RNNComponentViewController *) [parentMock expect]) mergeChildOptions:options child:self.originalUut];
     [self.uut mergeOptions:options];
     [parentMock verify];
 }
@@ -167,6 +170,17 @@
     RNNBottomTabsController *uut = [[RNNBottomTabsController alloc] initWithLayoutInfo:nil creator:nil options:options defaultOptions:nil presenter:[RNNBottomTabsPresenter new] eventEmitter:nil childViewControllers:@[[UIViewController new], vc]];
 
     XCTAssertTrue(uut.selectedIndex == 1);
+}
+
+- (void)testOnViewDidLayoutSubviews_ShouldUpdateDotIndicatorForChildren {
+	id dotIndicator = [OCMockObject partialMockForObject:[[RNNDotIndicatorPresenter alloc] initWithDefaultOptions:nil]];
+    RNNComponentViewController *vc = [[RNNComponentViewController alloc] initWithLayoutInfo:nil rootViewCreator:nil eventEmitter:nil presenter:nil options:nil defaultOptions:nil];
+	RNNBottomTabsController *uut = [[RNNBottomTabsController alloc] initWithLayoutInfo:nil creator:nil options:nil defaultOptions:nil presenter:nil bottomTabPresenter:nil dotIndicatorPresenter:dotIndicator eventEmitter:nil childViewControllers:@[[UIViewController new], vc] bottomTabsAttacher:nil];
+	
+	[[dotIndicator expect] bottomTabsDidLayoutSubviews:uut];
+	[uut viewDidLayoutSubviews];
+	[dotIndicator verify];
+	
 }
 
 

@@ -13,10 +13,10 @@
 
 - (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo creator:(id<RNNComponentViewCreator>)creator childViewControllers:(NSArray *)childViewControllers options:(RNNNavigationOptions *)options defaultOptions:(RNNNavigationOptions *)defaultOptions presenter:(RNNBasePresenter *)presenter eventEmitter:(RNNEventEmitter *)eventEmitter {
 	[self setControllers:childViewControllers];
-	self = [super initWithCenterViewController:self.center leftDrawerViewController:self.left rightDrawerViewController:self.right];
+	self = [super init];
 	
 	self.presenter = presenter;
-    [self.presenter boundViewController:self];
+    [self.presenter bindViewController:self];
 	
 	self.defaultOptions = defaultOptions;
 	self.options = options;
@@ -36,6 +36,20 @@
 
 - (void)setDefaultOptions:(RNNNavigationOptions *)defaultOptions {
 	[self.presenter setDefaultOptions:defaultOptions];
+}
+
+- (void)loadView {
+    [super loadView];
+    [self setCenterViewController:self.center];
+    [self setLeftDrawerViewController:self.left];
+    [self setRightDrawerViewController:self.right];
+}
+
+- (void)render {
+    [super render];
+    [self.center render];
+    [self.left render];
+    [self.right render];
 }
 
 - (void)setAnimationType:(NSString *)animationType {
