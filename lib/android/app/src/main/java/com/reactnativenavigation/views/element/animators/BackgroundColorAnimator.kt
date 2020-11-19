@@ -6,9 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.facebook.react.views.text.ReactTextView
 import com.facebook.react.views.view.ReactViewBackgroundDrawable
-import com.reactnativenavigation.parse.SharedElementTransitionOptions
-import com.reactnativenavigation.utils.ColorUtils
-import com.reactnativenavigation.utils.ViewUtils
+import com.reactnativenavigation.options.SharedElementTransitionOptions
+import com.reactnativenavigation.utils.*
 
 class BackgroundColorAnimator(from: View, to: View) : PropertyAnimatorCreator<ViewGroup>(from, to) {
     override fun shouldAnimateProperty(fromChild: ViewGroup, toChild: ViewGroup): Boolean {
@@ -19,10 +18,11 @@ class BackgroundColorAnimator(from: View, to: View) : PropertyAnimatorCreator<Vi
     override fun excludedViews() = listOf(ReactTextView::class.java)
 
     override fun create(options: SharedElementTransitionOptions): Animator {
-        return ObjectAnimator.ofObject(
-                BackgroundColorEvaluator(to.background as ReactViewBackgroundDrawable),
-                ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(from)),
-                ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(to))
-        ).setDuration(options.getDuration())
+        val backgroundColorEvaluator = BackgroundColorEvaluator(to.background as ReactViewBackgroundDrawable)
+        val fromColor = ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(from))
+        val toColor = ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(to))
+
+        backgroundColorEvaluator.evaluate(0f, fromColor, toColor)
+        return ObjectAnimator.ofObject(backgroundColorEvaluator, fromColor, toColor)
     }
 }

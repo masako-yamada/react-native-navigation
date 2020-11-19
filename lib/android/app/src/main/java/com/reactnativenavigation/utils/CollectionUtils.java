@@ -12,11 +12,17 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 import androidx.core.util.Pair;
 
+@SuppressWarnings("WeakerAccess")
 public class CollectionUtils {
     public interface Apply<T> {
         void on(T t);
+    }
+
+    public interface Comparator<T> {
+        boolean compare(T a, T b);
     }
 
     public static boolean isNullOrEmpty(Collection collection) {
@@ -39,9 +45,9 @@ public class CollectionUtils {
         S map(T value);
     }
 
-    public static @Nullable <T, S> List<S> map(@Nullable Collection<T> items, Mapper<T, S> map) {
+    public static @Nullable <T, S> ArrayList<S> map(@Nullable Collection<T> items, Mapper<T, S> map) {
         if (items == null) return null;
-        List<S> result = new ArrayList<>();
+        ArrayList<S> result = new ArrayList<>();
         for (T item : items) {
             result.add(map.map(item));
         }
@@ -60,16 +66,40 @@ public class CollectionUtils {
         return result;
     }
 
+    public static <K, V> V getOrDefault(@Nullable Map<K, V> map, K key, Functions.FuncR<V> defaultValueCreator) {
+        if (map == null) return defaultValueCreator.run();
+        return map.containsKey(key) ? map.get(key) : defaultValueCreator.run();
+    }
+
     public static <T> List<T> merge(@Nullable Collection<T> a, @Nullable Collection<T> b, @NonNull List<T> defaultValue) {
         List<T> result = merge(a, b);
         return result == null ? defaultValue : result;
     }
 
-    public static <T> List<T> merge(@Nullable Collection<T> a, @Nullable Collection<T> b) {
+    public static <T> ArrayList<T> merge(@Nullable Collection<T> a, @Nullable Collection<T> b) {
         if (a == null && b == null) return null;
-        List<T> result = new ArrayList<>(get(a));
+        ArrayList<T> result = new ArrayList<>(get(a));
         result.addAll(get(b));
         return result;
+    }
+
+    /**
+     * @return Items in a, that are not in b
+     */
+    public static <T> List<T> difference(@NonNull Collection<T> a, @Nullable Collection<T> b, Comparator<T> comparator) {
+        if (b == null) return new ArrayList<>(a);
+        ArrayList<T> results = new ArrayList<>();
+        forEach(a, btn -> {
+            if (!contains(b, btn, comparator)) results.add(btn);
+        });
+        return results;
+    }
+
+    private static <T> boolean contains(@NonNull Collection<T> items, T item, Comparator<T> comparator) {
+        for (T t : items) {
+            if (comparator.compare(t, item)) return true;
+        }
+        return false;
     }
 
     public static <T> void forEach(@Nullable Collection<T> items, Apply<T> apply) {
@@ -94,6 +124,13 @@ public class CollectionUtils {
         }
     }
 
+    public static <T> void forEachIndexed(@Nullable List<T> items, Functions.Func2<T, Integer> apply) {
+        if (items == null) return;
+        for (int i = 0; i < items.size(); i++) {
+            apply.run(items.get(i), i);
+        }
+    }
+
     public static @Nullable <T> T first(@Nullable Collection<T> items, Filter<T> by) {
         if (isNullOrEmpty(items)) return null;
         for (T item : items) {
@@ -115,6 +152,10 @@ public class CollectionUtils {
 
     public static <T> T last(@Nullable List<T> items) {
         return CollectionUtils.isNullOrEmpty(items) ? null : items.get(items.size() - 1);
+    }
+
+    public static <T> T requireLast(@Size(min = 1) List<T> items) {
+        return items.get(items.size() - 1);
     }
 
     public static <T> T removeLast(@NonNull List<T> items) {
@@ -169,5 +210,9 @@ public class CollectionUtils {
             result.add(new Pair(iter1.next(), iter2.next()));
         }
         return result;
+    }
+
+    public static @Nullable<T> T safeGet(List<T> items, int index) {
+        return index >= 0 && index < items.size() ? items.get(index) : null;
     }
 }

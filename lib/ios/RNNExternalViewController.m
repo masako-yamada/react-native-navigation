@@ -1,14 +1,24 @@
 #import "RNNExternalViewController.h"
 
 @implementation RNNExternalViewController {
-    UIViewController* _boundViewController;
+    UIViewController *_boundViewController;
 }
 
-- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo eventEmitter:(RNNEventEmitter *)eventEmitter presenter:(RNNComponentPresenter *)presenter options:(RNNNavigationOptions *)options defaultOptions:(RNNNavigationOptions *)defaultOptions viewController:(UIViewController *)viewController {
+- (instancetype)initWithLayoutInfo:(RNNLayoutInfo *)layoutInfo
+                      eventEmitter:(RNNEventEmitter *)eventEmitter
+                         presenter:(RNNComponentPresenter *)presenter
+                           options:(RNNNavigationOptions *)options
+                    defaultOptions:(RNNNavigationOptions *)defaultOptions
+                    viewController:(UIViewController *)viewController {
     _boundViewController = viewController;
-    self = [super initWithLayoutInfo:layoutInfo rootViewCreator:nil eventEmitter:eventEmitter presenter:presenter options:options defaultOptions:defaultOptions];
+    self = [super initWithLayoutInfo:layoutInfo
+                     rootViewCreator:nil
+                        eventEmitter:eventEmitter
+                           presenter:presenter
+                             options:options
+                      defaultOptions:defaultOptions];
     [self bindViewController:viewController];
-	return self;
+    return self;
 }
 
 - (void)bindViewController:(UIViewController *)viewController {
@@ -23,11 +33,33 @@
 }
 
 - (void)loadView {
-	self.view = [[UIView alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    self.view = [[UIView alloc] initWithFrame:UIScreen.mainScreen.bounds];
 }
 
 - (void)render {
-	[self readyForPresentation];
+    [self readyForPresentation];
+}
+
+#pragma mark - UIViewController overrides
+
+- (void)willMoveToParentViewController:(UIViewController *)parent {
+    [self.presenter willMoveToParentViewController:parent];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return [self.presenter getStatusBarStyle];
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return [self.presenter getStatusBarVisibility];
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return [self.presenter getOrientation];
+}
+
+- (BOOL)hidesBottomBarWhenPushed {
+    return [self.presenter hidesBottomBarWhenPushed];
 }
 
 @end

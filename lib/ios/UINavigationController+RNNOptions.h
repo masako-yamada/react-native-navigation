@@ -16,6 +16,6 @@
 
 - (void)setNavigationBarClipsToBounds:(BOOL)clipsToBounds;
 
-- (void)setBackButtonColor:(UIColor *)color;
+- (void)setBackButtonTestID:(NSString *)testID;
 
 @end
